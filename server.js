@@ -1,6 +1,11 @@
 const express = require("express");
-const mongojs = require("mongojs");
 const logger = require("morgan");
+const mongoose = require("mongoose");
+var path = require("path");
+
+
+const PORT = process.env.PORT || 3000;
+
 
 const app = express();
 
@@ -11,21 +16,35 @@ app.use(express.json());
 
 app.use(express.static("public"));
 
-const databaseUrl = "fitnesstracker";
-const collections = "workouts";
-
-const db = mongojs(databaseUrl, collections);
-db.on("error", error => {
-    console.log("Database Error: ", error);
+//Connecting to Mongoose DB
+mongoose.connect(process.env.MONGODB_URI ||"mongodb://localhost/workout", {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true
 });
 
-// ==========================================================
-//Routes
-// ==========================================================
+//Path to Api Routes
+app.use(require("./routes/api-routes.js"));
 
+//================================================================================================================================
+//HTML Routes
+app.get("/", function(req, res) {
+  res.sendFile(path.join(__dirname + '/public/index.html'));
+  console.log("Im trying to go to homepage!")
+});
 
-// ==========================================================
-//Listen on port 3000
-app.listen(3000, () => {
-    console.log("App listening on port 3000");
+app.get("/exercise", function(req, res) {
+   res.sendFile(path.join(__dirname + '/public/exercise.html'));
+   console.log("Im trying to go to exercise page!")
+});
+
+app.get("/stats", function(req, res) {
+   res.sendFile(path.join(__dirname + '/public/stats.html'));
+   console.log("Im trying to go to stats!")
+});
+//================================================================================================================================
+
+//Listen on port 
+app.listen(PORT, () => {
+    console.log(`App running on port ${PORT}!`);
 })
